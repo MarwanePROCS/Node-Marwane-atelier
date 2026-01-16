@@ -1,3 +1,4 @@
+// =============================================================================
 // BASE SETUP
 // =============================================================================
 
@@ -6,62 +7,87 @@ var bodyParser = require('body-parser');
 var app        = express();
 var morgan     = require('morgan');
 
-// configure app
-app.use(morgan('dev')); // log requests to the console
+// Configuration de l'app
+app.use(morgan('dev')); // log des requêtes dans la console
 
-// configure body parser
+// Configuration de body parser pour récupérer les données POST
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-var port     = process.env.PORT || 8080; // set our port
+var port = process.env.PORT || 8080; // définition du port
 
-// ROUTES FOR OUR API
+// =============================================================================
+// ROUTES DE L'API
 // =============================================================================
 
 var router = express.Router();
 
-// middleware to use for all requests
+// Middleware pour toutes les requêtes
 router.use(function(req, res, next) {
-    console.log('Something is happening.');
+    console.log('Une requête est en cours.');
     next();
 });
 
-// test route (GET http://localhost:8080/api)
+// Route de test de l'API (GET http://localhost:8080/api)
 router.get('/', function(req, res) {
-    res.json({ message: 'hooray! welcome to our api!' });   
+    res.json({ message: 'Hourra ! Bienvenue sur notre API !' });   
 });
 
-// SIMULATION DE BASE DE DONNÉES (Pour le TP Docker)
-var bears = []; // On stocke les ours dans une liste en mémoire
+// ----------------------------------------------------
+// SIMULATION DE BASE DE DONNÉES (Mock)
+// ----------------------------------------------------
+// On utilise une simple liste pour stocker les données tant que le serveur tourne
+var bears = []; 
 var idCounter = 1;
 
+// Routes pour /bears
 router.route('/bears')
-    // create a bear (accessed at POST http://localhost:8080/api/bears)
+
+    // Créer un ours (POST http://localhost:8080/api/bears)
     .post(function(req, res) {
         var bear = {};
-        bear.id = idCounter++;
+        bear.id = idCounter++; // On génère un ID unique
         bear.name = req.body.name;
-        bears.push(bear);
+        
+        bears.push(bear); // On ajoute à la liste
+        
         res.json({ message: 'Bear created!', bear: bear });
     })
 
-    // get all the bears (accessed at GET http://localhost:8080/api/bears)
+    // Récupérer tous les ours (GET http://localhost:8080/api/bears)
     .get(function(req, res) {
         res.json(bears);
     });
 
+// Routes pour /bears/:bear_id
 router.route('/bears/:bear_id')
-    // get the bear with that id
+
+    // Récupérer un ours par son ID
     .get(function(req, res) {
+        // On cherche dans notre liste l'ours qui a le bon ID
         var bear = bears.find(b => b.id == req.params.bear_id);
-        if (bear) res.json(bear);
-        else res.status(404).json({message: "Bear not found"});
+        
+        if (bear) {
+            res.json(bear);
+        } else {
+            res.status(404).json({message: "Bear not found"});
+        }
     });
 
-// REGISTER OUR ROUTES -------------------------------
+// =============================================================================
+// ROUTES GLOBALES (Correction du problème "Cannot GET /")
+// =============================================================================
+
+// Route pour la racine du site (http://localhost:8080)
+app.get('/', function(req, res) {
+    res.send('Bienvenue ! Le serveur Docker fonctionne parfaitement. Testez l\'API sur /api');
+});
+
+// Enregistrement des routes de l'API (préfixe /api)
 app.use('/api', router);
 
-// START THE SERVER
+// =============================================================================
+// DÉMARRAGE DU SERVEUR
 // =============================================================================
 app.listen(port);
-console.log('Magic happens on port ' + port);
+console.log('Le serveur tourne sur le port ' + port);
