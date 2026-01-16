@@ -6,8 +6,9 @@
     "url": "git://github.com/scotch-io/node-token-authentication"
   },
   "scripts": {
-    "start": "node server.js"
-  },
+    "start": "node server.js",
+    "test": "echo \"Pas de tests pour le moment\" && exit 0"
+},
   "author": "Chris Sevilleja <scotch.io>",
   "license": "MIT",
   "dependencies": {
